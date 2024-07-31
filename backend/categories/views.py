@@ -36,8 +36,8 @@ class CategoryDetail(APIView):
             raise NotFound
 
     def get(self, request, pk):
-
         serializer = CategorySerializer(self.get_object(pk))
+        print(serializer)
         return Response(serializer.data)
 
     def put(self, request, pk):
