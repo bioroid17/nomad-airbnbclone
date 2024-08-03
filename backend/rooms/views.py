@@ -67,7 +67,11 @@ class Rooms(APIView):
 
     def get(self, request):
         all_rooms = Room.objects.all()
-        serializer = RoomListSerializer(all_rooms, many=True)
+        serializer = RoomListSerializer(
+            all_rooms,
+            many=True,
+            context={"request": request},
+        )
         return Response(serializer.data)
 
     def post(self, request):
@@ -112,7 +116,10 @@ class RoomDetail(APIView):
 
     def get(self, request, pk):
         room = self.get_object(pk)
-        serializer = RoomDetailSerializer(room)
+        serializer = RoomDetailSerializer(
+            room,
+            context={"request": request},
+        )
         return Response(serializer.data)
 
     def put(self, request, pk):
@@ -140,6 +147,8 @@ class RoomDetail(APIView):
 
             amenity_pks = request.data.get("amenities")
             amenities = []
+            if not amenity_pks:
+                amenity_pks = []
             try:
                 for amenity_pk in amenity_pks:
                     amenity = Amenity.objects.get(pk=amenity_pk)
@@ -152,7 +161,10 @@ class RoomDetail(APIView):
                 amenities=amenities,
             )
             return Response(
-                RoomDetailSerializer(updated_room).data,
+                RoomDetailSerializer(
+                    updated_room,
+                    context={"request": request},
+                ).data,
             )
         else:
             raise Response(serializer.errors)
