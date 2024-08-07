@@ -1,6 +1,7 @@
 from django.utils import timezone
 from rest_framework import serializers
 from .models import Booking
+from experiences.models import Experience
 
 
 class CreateRoomBookingSerializer(serializers.ModelSerializer):
@@ -36,10 +37,14 @@ class CreateRoomBookingSerializer(serializers.ModelSerializer):
                 "Check in should be smaller than check out."
             )
 
-        if Booking.objects.filter(
+        bookings = Booking.objects.filter(
             check_in__lte=data["check_out"],
             check_out__gte=data["check_in"],
-        ).exists():
+        )
+        if self.context.get("pk"):
+            bookings = bookings.exclude(pk=self.context["pk"])
+
+        if bookings.exists():
             raise serializers.ValidationError(
                 "Those (or some of those) dates are already taken."
             )
@@ -47,7 +52,32 @@ class CreateRoomBookingSerializer(serializers.ModelSerializer):
         return data
 
 
+class CreateExperienceBookingSerializer(serializers.ModelSerializer):
+
+    experience_time = serializers.DateTimeField()
+
+    class Meta:
+        model = Booking
+        fields = (
+            "experience_time",
+            "guests",
+        )
+
+    def validate_experience_time(self, value):
+        now = timezone.localtime(timezone.now())
+        if now > value:
+            raise serializers.ValidationError("Can't book in the past!")
+
+        experience = self.context["experience"]
+        if experience.start != value.time():
+            raise serializers.ValidationError("Invalid time")
+
+        return value
+
+
 class PublicBookingSerializer(serializers.ModelSerializer):
+
+    experience_done = serializers.SerializerMethodField()
 
     class Meta:
         model = Booking
@@ -56,5 +86,12 @@ class PublicBookingSerializer(serializers.ModelSerializer):
             "check_in",
             "check_out",
             "experience_time",
+            "experience_done",
             "guests",
         )
+
+    def get_experience_done(self, booking):
+        if booking.experience_time:
+            return booking.experience.end
+        else:
+            return None

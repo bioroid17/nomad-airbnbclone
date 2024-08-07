@@ -10,7 +10,7 @@ class Wishlist(CommonModel):
         "rooms.Room",
         related_name="wishlists",
     )
-    experienes = models.ManyToManyField(
+    experiences = models.ManyToManyField(
         "experiences.Experience",
         related_name="wishlists",
     )

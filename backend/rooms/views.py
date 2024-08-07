@@ -1,14 +1,21 @@
+# django
 from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
+
+# django rest framework
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, ParseError, PermissionDenied
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.status import HTTP_204_NO_CONTENT
+
+# models
 from .models import Amenity, Room
 from categories.models import Category
 from bookings.models import Booking
+
+# serializers
 from .serializers import AmenitySerializer, RoomListSerializer, RoomDetailSerializer
 from reviews.serializers import ReviewSerializer
 from medias.serializers import PhotoSerializer
@@ -86,7 +93,7 @@ class Rooms(APIView):
                 raise ParseError("Category is required")
             try:
                 category = Category.objects.get(pk=category_pk)
-                if category.kind == Category.CategoryKindChoices.EXPERIENCES:
+                if category.kind != Category.CategoryKindChoices.ROOMS:
                     raise ParseError("Category kind should be 'rooms'")
             except Category.DoesNotExist:
                 raise ParseError("Category not found")
@@ -100,7 +107,12 @@ class Rooms(APIView):
                     for amenity_pk in amenities:
                         amenity = Amenity.objects.get(pk=amenity_pk)
                         room.amenities.add(amenity)
-                    return Response(RoomDetailSerializer(room).data)
+                    return Response(
+                        RoomDetailSerializer(
+                            room,
+                            context={"request": request},
+                        ).data
+                    )
             except Exception:
                 raise ParseError("Amenity not found")
         else:
@@ -266,7 +278,7 @@ class RoomPhotos(APIView):
             return Response(serializer.errors)
 
 
-class RoomBookings(APIView):
+class RoomBookingList(APIView):
 
     permission_classes = [IsAuthenticatedOrReadOnly]
 
@@ -274,7 +286,7 @@ class RoomBookings(APIView):
         try:
             return Room.objects.get(pk=pk)
         except Room.DoesNotExist:
-            raise NotFound
+            raise NotFound("Room not found")
 
     def get(self, request, pk):
         room = self.get_object(pk)
@@ -300,5 +312,55 @@ class RoomBookings(APIView):
                 kind=Booking.BookingKindChoices.ROOM,
             )
             return Response(PublicBookingSerializer(booking).data)
+        else:
+            return Response(serializer.errors)
+
+
+class RoomBooking(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_object(self, pk):
+        try:
+            return Room.objects.get(pk=pk)
+        except Room.DoesNotExist:
+            raise NotFound("Room not found")
+
+    def get_booking(self, pk, room):
+        try:
+            return Booking.objects.get(
+                room=room,
+                kind=Booking.BookingKindChoices.ROOM,
+                pk=pk,
+            )
+        except Booking.DoesNotExist:
+            raise NotFound(f"This booking doesn't belong to room name: {room.name}")
+
+    def get(self, request, pk, booking_pk):
+        room = self.get_object(pk)
+        booking = self.get_booking(booking_pk, room)
+        serializer = PublicBookingSerializer(booking)
+        return Response(serializer.data)
+
+    def delete(self, request, pk, booking_pk):
+        room = self.get_object(pk)
+        booking = self.get_booking(booking_pk, room)
+        booking.delete()
+        return Response(status=HTTP_204_NO_CONTENT)
+
+    def put(self, request, pk, booking_pk):
+        if request.data.get("experience_time"):
+            raise ParseError("Experience time is only for experience bookings.")
+
+        room = self.get_object(pk)
+        booking = self.get_booking(booking_pk, room)
+        serializer = CreateRoomBookingSerializer(
+            booking,
+            data=request.data,
+            partial=True,
+            context={"pk": booking_pk},
+        )
+        if serializer.is_valid():
+            updated_booking = serializer.save()
+            return Response(PublicBookingSerializer(updated_booking).data)
         else:
             return Response(serializer.errors)
