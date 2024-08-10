@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ParseError, NotFound
+from rest_framework.status import HTTP_400_BAD_REQUEST
 from .serializers import PrivateUserSerializer, PublicUserSerializer
 from .models import User
 
@@ -31,7 +32,10 @@ class Me(APIView):
             serializer = PrivateUserSerializer(updated_user)
             return Response(serializer.data)
         else:
-            return Response(serializer.errors)
+            return Response(
+                serializer.errors,
+                status=HTTP_400_BAD_REQUEST,
+            )
 
 
 class Users(APIView):
@@ -48,7 +52,10 @@ class Users(APIView):
             serializer = PrivateUserSerializer(user)
             return Response(serializer.data)
         else:
-            return Response(serializer.errors)
+            return Response(
+                serializer.errors,
+                status=HTTP_400_BAD_REQUEST,
+            )
 
 
 class PublicUser(APIView):

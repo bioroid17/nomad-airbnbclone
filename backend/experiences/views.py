@@ -13,7 +13,7 @@ from rest_framework.exceptions import (
     NotAcceptable,
 )
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from rest_framework.status import HTTP_204_NO_CONTENT
+from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
 
 # models
 from .models import Perk, Experience
@@ -47,7 +47,10 @@ class Perks(APIView):
             perk = serializer.save()
             return Response(PerkSerializer(perk).data)
         else:
-            return Response(serializer.errors)
+            return Response(
+                serializer.errors,
+                status=HTTP_400_BAD_REQUEST,
+            )
 
 
 class PerkDetail(APIView):
@@ -74,7 +77,10 @@ class PerkDetail(APIView):
             updated_perk = serializer.save()
             return Response(PerkSerializer(updated_perk).data)
         else:
-            return Response(serializer.errors)
+            return Response(
+                serializer.errors,
+                status=HTTP_400_BAD_REQUEST,
+            )
 
     def delete(self, request, pk):
         perk = self.get_object(pk)
@@ -127,7 +133,10 @@ class Experiences(APIView):
             except Exception:
                 raise ParseError("Perk not found")
         else:
-            return Response(serializer.errors)
+            return Response(
+                serializer.errors,
+                status=HTTP_400_BAD_REQUEST,
+            )
 
 
 class ExperienceDetail(APIView):
@@ -191,7 +200,10 @@ class ExperienceDetail(APIView):
                 ).data,
             )
         else:
-            raise Response(serializer.errors)
+            raise Response(
+                serializer.errors,
+                status=HTTP_400_BAD_REQUEST,
+            )
 
     def delete(self, request, pk):
         experience = self.get_object(pk)
@@ -236,7 +248,10 @@ class ExperienceReviews(APIView):
             )
             return Response(ReviewSerializer(review).data)
         else:
-            Response(serializer.errors)
+            return Response(
+                serializer.errors,
+                status=HTTP_400_BAD_REQUEST,
+            )
 
 
 class ExperiencePerks(APIView):
@@ -286,7 +301,10 @@ class ExperiencePhotos(APIView):
             )
             return Response(PhotoSerializer(photo).data)
         else:
-            return Response(serializer.errors)
+            return Response(
+                serializer.errors,
+                status=HTTP_400_BAD_REQUEST,
+            )
 
 
 class ExperienceVideo(APIView):
@@ -314,7 +332,10 @@ class ExperienceVideo(APIView):
             except Exception:
                 raise NotAcceptable("There only can be one video per experience.")
         else:
-            return Response(serializer.errors)
+            return Response(
+                serializer.errors,
+                status=HTTP_400_BAD_REQUEST,
+            )
 
 
 class ExperienceBookingList(APIView):
@@ -355,7 +376,10 @@ class ExperienceBookingList(APIView):
             )
             return Response(PublicBookingSerializer(booking).data)
         else:
-            return Response(serializer.errors)
+            return Response(
+                serializer.errors,
+                status=HTTP_400_BAD_REQUEST,
+            )
 
 
 class ExperienceBooking(APIView):
@@ -408,4 +432,7 @@ class ExperienceBooking(APIView):
             updated_booking = serializer.save()
             return Response(PublicBookingSerializer(updated_booking).data)
         else:
-            return Response(serializer.errors)
+            return Response(
+                serializer.errors,
+                status=HTTP_400_BAD_REQUEST,
+            )
