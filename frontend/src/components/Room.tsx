@@ -32,11 +32,15 @@ export default function Room() {
       </Box>
       <Box>
         <Grid gap={2} templateColumns={"6fr 1fr"}>
-          <Text as={"b"} noOfLines={1} fontSize={"md"}>
+          <Text display={"block"} as={"b"} noOfLines={1} fontSize={"md"}>
             이시레몰리노, 프랑스의 방
           </Text>
-          <HStack spacing={1}>
-            <FaStar size={15} />
+          <HStack
+            _hover={{ color: "red.100" }}
+            spacing={1}
+            alignItems={"center"}
+          >
+            <FaStar size={12} />
             <Text>5.0</Text>
           </HStack>
         </Grid>
