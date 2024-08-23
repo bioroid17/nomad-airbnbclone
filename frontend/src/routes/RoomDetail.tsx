@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 export default function RoomDetail() {
   const { roomPk } = useParams();
   const { isLoading, data } = useQuery({
-    queryKey: [`room:${roomPk}`],
+    queryKey: [`rooms`, roomPk],
     queryFn: getRoom,
   });
   console.log(data);
