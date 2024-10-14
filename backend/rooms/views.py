@@ -189,7 +189,7 @@ class RoomDetail(APIView):
                 ).data,
             )
         else:
-            raise Response(
+            return Response(
                 serializer.errors,
                 status=HTTP_400_BAD_REQUEST,
             )
