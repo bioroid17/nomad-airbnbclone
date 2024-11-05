@@ -54,6 +54,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
       toast({
         title: "Welcome back!",
         status: "success",
+        position: "bottom-right",
       });
       onClose();
       reset();

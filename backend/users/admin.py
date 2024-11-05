@@ -54,3 +54,5 @@ class CustomUserAdmin(UserAdmin):
         "name",
         "is_host",
     )
+
+    ordering = ("-id",)

@@ -59,3 +59,10 @@ class PublicUserSerializer(ModelSerializer):
 
     def get_experiences_count(self, user):
         return user.experiences.count()
+
+
+class SignUpSerializer(ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ("name", "email", "username", "password")

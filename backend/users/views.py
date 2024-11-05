@@ -7,8 +7,8 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ParseError, NotFound
-from rest_framework.status import HTTP_400_BAD_REQUEST
-from .serializers import PrivateUserSerializer, PublicUserSerializer
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_406_NOT_ACCEPTABLE
+from .serializers import PrivateUserSerializer, PublicUserSerializer, SignUpSerializer
 from .models import User
 
 
@@ -42,15 +42,19 @@ class Me(APIView):
 class Users(APIView):
 
     def post(self, request):
+        username = request.data.get("username")
+        if User.objects.filter(username=username).exists():
+            return Response(status=HTTP_406_NOT_ACCEPTABLE)
         password = request.data.get("password")
         if not password:
             raise ParseError
-        serializer = PrivateUserSerializer(data=request.data)
+        serializer = SignUpSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
             user.set_password(password)
             user.save()
-            serializer = PrivateUserSerializer(user)
+            login(request, user)
+            serializer = SignUpSerializer(user)
             return Response(serializer.data)
         else:
             return Response(

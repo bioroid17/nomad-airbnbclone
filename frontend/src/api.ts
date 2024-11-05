@@ -59,6 +59,13 @@ export interface IUsernameLoginVariables {
   password: string;
 }
 
+export interface IUsernameSignUpVariables {
+  name: string;
+  email: string;
+  username: string;
+  password: string;
+}
+
 export interface IUsernameLoginSuccess {
   ok: string;
 }
@@ -75,6 +82,22 @@ export const usernameLogIn = ({
     .post(
       `users/login`,
       { username, password },
+      {
+        headers: { "X-CSRFToken": Cookie.get("csrftoken") || "" },
+      }
+    )
+    .then((response) => response.data);
+
+export const usernameSignUp = ({
+  name,
+  email,
+  username,
+  password,
+}: IUsernameSignUpVariables) =>
+  instance
+    .post(
+      `users/`,
+      { name, email, username, password },
       {
         headers: { "X-CSRFToken": Cookie.get("csrftoken") || "" },
       }
