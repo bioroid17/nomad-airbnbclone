@@ -11,12 +11,25 @@ import { useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
 import ProtectedPage from "../components/ProtectedPage";
 import HostOnlyPage from "../components/HostOnlyPage";
+import { useMutation } from "@tanstack/react-query";
+import { getUploadURL } from "../api";
+
+interface IForm {
+  file: FileList;
+}
 
 export default function UploadPhotos() {
-  const { register, watch } = useForm();
+  const { register, handleSubmit } = useForm<IForm>();
+  const mutation = useMutation({
+    mutationFn: getUploadURL,
+    onSuccess: (data: any) => {
+      console.log(data);
+    },
+  });
   const { roomPk } = useParams();
-  console.log(watch());
-
+  const onSubmit = (data: any) => {
+    mutation.mutate();
+  };
   return (
     <ProtectedPage>
       <HostOnlyPage>
@@ -30,11 +43,16 @@ export default function UploadPhotos() {
         >
           <Container>
             <Heading textAlign={"center"}>Upload a Photo</Heading>
-            <VStack spacing={5} mt={10}>
+            <VStack
+              as="form"
+              onSubmit={handleSubmit(onSubmit)}
+              spacing={5}
+              mt={10}
+            >
               <FormControl>
                 <Input {...register("file")} type="file" accept="image/*" />
               </FormControl>
-              <Button w="full" colorScheme={"red"}>
+              <Button type="submit" w="full" colorScheme={"red"}>
                 Upload photos
               </Button>
             </VStack>
