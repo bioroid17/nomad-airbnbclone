@@ -52,14 +52,18 @@ export default function RoomDetail() {
             key={index}
           >
             <Skeleton isLoaded={!isLoading} h={"100%"} w={"100%"}>
-              {data?.photos && data?.photos.length > 0 ? (
+              {data?.photos &&
+              data?.photos[index] &&
+              data?.photos.length > 0 ? (
                 <Image
                   objectFit={"cover"}
                   w={"100%"}
                   h={"100%"}
                   src={data?.photos[index].file}
                 />
-              ) : null}
+              ) : (
+                <Box minH="280px" h="100%" w="100%" p={10} bg="green.400" />
+              )}
             </Skeleton>
           </GridItem>
         ))}

@@ -5,6 +5,7 @@ import {
   FormControl,
   Heading,
   Input,
+  useToast,
   VStack,
 } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
@@ -12,19 +13,38 @@ import { useParams } from "react-router-dom";
 import ProtectedPage from "../components/ProtectedPage";
 import HostOnlyPage from "../components/HostOnlyPage";
 import { useMutation } from "@tanstack/react-query";
-import { getUploadURL, uploadImage } from "../api";
+import { createPhoto, getUploadURL, uploadImage } from "../api";
 
 interface IForm {
   file: FileList;
 }
 
 export default function UploadPhotos() {
-  const { register, handleSubmit, watch } = useForm<IForm>();
+  const { register, handleSubmit, watch, reset } = useForm<IForm>();
   const { roomPk } = useParams();
+  const toast = useToast();
+  const createPhotoMutation = useMutation({
+    mutationFn: createPhoto,
+    onSuccess: () => {
+      toast({
+        status: "success",
+        title: "Image uploaded!",
+        description: "Feel free to upload more images.",
+        isClosable: true,
+      });
+      reset();
+    },
+  });
   const uploadImageMutation = useMutation({
     mutationFn: uploadImage,
-    onSuccess: (data: any) => {
-      console.log(data);
+    onSuccess: ({ result }: any) => {
+      if (roomPk) {
+        createPhotoMutation.mutate({
+          description: "I love react",
+          file: `https://imagedelivery.net/ABGfCs6L1zfJXDEHYNBMsg/${result.id}/public`,
+          roomPk,
+        });
+      }
     },
   });
   const uploadURLMutation = useMutation({
@@ -61,7 +81,16 @@ export default function UploadPhotos() {
               <FormControl>
                 <Input {...register("file")} type="file" accept="image/*" />
               </FormControl>
-              <Button type="submit" w="full" colorScheme={"red"}>
+              <Button
+                isLoading={
+                  createPhotoMutation.isPending ||
+                  uploadURLMutation.isPending ||
+                  uploadImageMutation.isPending
+                }
+                type="submit"
+                w="full"
+                colorScheme={"red"}
+              >
                 Upload photos
               </Button>
             </VStack>
