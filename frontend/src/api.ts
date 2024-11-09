@@ -138,3 +138,20 @@ export const getUploadURL = () =>
       headers: { "X-CSRFToken": Cookie.get("csrftoken") || "" },
     })
     .then((response) => response.data);
+
+export interface IUploadImageVariables {
+  file: FileList;
+  uploadURL: string;
+}
+
+export const uploadImage = ({ file, uploadURL }: IUploadImageVariables) => {
+  const form = new FormData();
+  form.append("file", file[0]);
+  return axios
+    .post(uploadURL, form, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+    .then((response) => response.data);
+};
