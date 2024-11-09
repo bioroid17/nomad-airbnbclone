@@ -19,6 +19,11 @@ interface IForm {
   file: FileList;
 }
 
+interface IUploadURLResponse {
+  id: string;
+  uploadURL: string;
+}
+
 export default function UploadPhotos() {
   const { register, handleSubmit, watch, reset } = useForm<IForm>();
   const { roomPk } = useParams();
@@ -49,14 +54,14 @@ export default function UploadPhotos() {
   });
   const uploadURLMutation = useMutation({
     mutationFn: getUploadURL,
-    onSuccess: (data: any) => {
+    onSuccess: (data: IUploadURLResponse) => {
       uploadImageMutation.mutate({
         uploadURL: data.uploadURL,
         file: watch("file"),
       });
     },
   });
-  const onSubmit = (data: any) => {
+  const onSubmit = () => {
     uploadURLMutation.mutate();
   };
   return (
