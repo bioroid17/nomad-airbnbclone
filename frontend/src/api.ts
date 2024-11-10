@@ -1,6 +1,7 @@
 import Cookie from "js-cookie";
 import { QueryFunctionContext } from "@tanstack/react-query";
 import axios from "axios";
+import type { Value } from "react-calendar/dist/cjs/shared/types";
 
 const instance = axios.create({
   baseURL: "http://localhost:8000/api/v1/",
@@ -178,3 +179,33 @@ export const createPhoto = ({
       }
     )
     .then((response) => response.data);
+
+type CheckBookingQueryKey = [string, string?, Value?];
+
+export const checkBooking = ({
+  queryKey,
+}: QueryFunctionContext<CheckBookingQueryKey>) => {
+  const [_, roomPk, dates] = queryKey;
+  if (dates) {
+    const [startDate, endDate] = dates.toLocaleString().split(",");
+    const checkIn = startDate
+      .split(".")
+      .filter((value, index) => index !== 3)
+      .map((s) => {
+        return s.trim();
+      })
+      .join("-");
+    const checkOut = endDate
+      .split(".")
+      .filter((value, index) => index !== 3)
+      .map((s) => {
+        return s.trim();
+      })
+      .join("-");
+    return instance
+      .get(
+        `rooms/${roomPk}/bookings/check?check_in=${checkIn}&check_out=${checkOut}`
+      )
+      .then((response) => response.data);
+  }
+};
