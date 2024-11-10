@@ -19,7 +19,7 @@ import { FaStar } from "react-icons/fa";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import type { Value } from "react-calendar/dist/cjs/shared/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function RoomDetail() {
   const { roomPk } = useParams();
@@ -34,7 +34,26 @@ export default function RoomDetail() {
     queryFn: getRoomReviews,
   });
   const [dates, setDates] = useState<Value>();
-  console.log(dates);
+  useEffect(() => {
+    if (dates) {
+      const [startDate, endDate] = dates.toLocaleString().split(",");
+      const checkIn = startDate
+        .split(".")
+        .filter((value, index) => index !== 3)
+        .map((s) => {
+          return s.trim();
+        })
+        .join("-");
+      const checkOut = endDate
+        .split(".")
+        .filter((value, index) => index !== 3)
+        .map((s) => {
+          return s.trim();
+        })
+        .join("-");
+      console.log(checkIn, checkOut);
+    }
+  });
   return (
     <Box mt={10} px={{ base: 10, lg: 40 }}>
       <Skeleton height={"43px"} isLoaded={!isLoading}>
