@@ -4,6 +4,7 @@ import RoomSkeleton from "../components/RoomSkeleton";
 import { useQuery } from "@tanstack/react-query";
 import { getRooms } from "../api";
 import { IRoomList } from "../types";
+import { Helmet } from "react-helmet";
 
 export default function Home() {
   const { isLoading, data } = useQuery<IRoomList[]>({
@@ -27,6 +28,9 @@ export default function Home() {
         "2xl": "repeat(5, 1fr)",
       }}
     >
+      <Helmet>
+        <title>{data ? "Home" : "Loading..."}</title>
+      </Helmet>
       {isLoading ? (
         <>
           <RoomSkeleton />

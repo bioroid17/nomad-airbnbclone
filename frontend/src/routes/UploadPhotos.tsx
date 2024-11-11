@@ -14,6 +14,7 @@ import ProtectedPage from "../components/ProtectedPage";
 import HostOnlyPage from "../components/HostOnlyPage";
 import { useMutation } from "@tanstack/react-query";
 import { createPhoto, getUploadURL, uploadImage } from "../api";
+import { Helmet } from "react-helmet";
 
 interface IForm {
   file: FileList;
@@ -75,6 +76,9 @@ export default function UploadPhotos() {
             lg: 40,
           }}
         >
+          <Helmet>
+            <title>Upload Photo</title>
+          </Helmet>
           <Container>
             <Heading textAlign={"center"}>Upload a Photo</Heading>
             <VStack

@@ -21,6 +21,8 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import type { Value } from "react-calendar/dist/cjs/shared/types";
 import { useState } from "react";
+import { Helmet } from "react-helmet";
+import "../calendar.css";
 
 export default function RoomDetail() {
   const { roomPk } = useParams();
@@ -43,6 +45,9 @@ export default function RoomDetail() {
   });
   return (
     <Box mt={10} px={{ base: 10, lg: 40 }}>
+      <Helmet>
+        <title>{data ? data.name : "Loading..."}</title>
+      </Helmet>
       <Skeleton height={"43px"} isLoaded={!isLoading}>
         <Heading>{data?.name}</Heading>
       </Skeleton>
@@ -79,7 +84,7 @@ export default function RoomDetail() {
           </GridItem>
         ))}
       </Grid>
-      <Grid gap={20} templateColumns={"2fr 1fr"} maxW="container.lg">
+      <Grid gap={20} templateColumns={"2fr 1fr"} maxW="container.xl">
         <Box>
           <HStack width={"60%"} mt={10} justifyContent={"space-between"}>
             <VStack w={"max"} alignItems={"flex-start"}>

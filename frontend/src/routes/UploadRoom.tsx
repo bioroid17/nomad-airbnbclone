@@ -30,6 +30,7 @@ import {
 import { IAmenity, ICategory, IRoomDetail } from "../types";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet";
 
 export default function UploadRoom() {
   const { register, handleSubmit } = useForm<IUploadRoomVariables>();
@@ -65,6 +66,9 @@ export default function UploadRoom() {
     <ProtectedPage>
       <HostOnlyPage>
         <Box pb={40} mt={10} px={{ base: 10, lg: 40 }}>
+          <Helmet>
+            <title>Upload Room</title>
+          </Helmet>
           <Container>
             <Heading textAlign={"center"}>Upload Room</Heading>
             <VStack

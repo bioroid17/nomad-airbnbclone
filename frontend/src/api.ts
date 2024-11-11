@@ -2,6 +2,7 @@ import Cookie from "js-cookie";
 import { QueryFunctionContext } from "@tanstack/react-query";
 import axios from "axios";
 import type { Value } from "react-calendar/dist/cjs/shared/types";
+import { formatDate } from "./lib/utils";
 
 const instance = axios.create({
   baseURL: "http://localhost:8000/api/v1/",
@@ -188,20 +189,8 @@ export const checkBooking = ({
   const [_, roomPk, dates] = queryKey;
   if (dates) {
     const [startDate, endDate] = dates.toLocaleString().split(",");
-    const checkIn = startDate
-      .split(".")
-      .filter((value, index) => index !== 3)
-      .map((s) => {
-        return s.trim();
-      })
-      .join("-");
-    const checkOut = endDate
-      .split(".")
-      .filter((value, index) => index !== 3)
-      .map((s) => {
-        return s.trim();
-      })
-      .join("-");
+    const checkIn = formatDate(startDate);
+    const checkOut = formatDate(endDate);
     return instance
       .get(
         `rooms/${roomPk}/bookings/check?check_in=${checkIn}&check_out=${checkOut}`
