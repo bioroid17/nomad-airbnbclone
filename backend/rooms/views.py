@@ -19,7 +19,10 @@ from bookings.models import Booking
 from .serializers import AmenitySerializer, RoomListSerializer, RoomDetailSerializer
 from reviews.serializers import ReviewSerializer
 from medias.serializers import PhotoSerializer
-from bookings.serializers import PublicBookingSerializer, CreateRoomBookingSerializer
+from bookings.serializers import (
+    PublicRoomBookingSerializer,
+    CreateRoomBookingSerializer,
+)
 
 
 class Amenities(APIView):
@@ -196,10 +199,11 @@ class RoomDetail(APIView):
 
     def delete(self, request, pk):
         room = self.get_object(pk)
+        name = room.name
         if room.owner != request.user:
             raise PermissionDenied
         room.delete()
-        return Response(status=HTTP_204_NO_CONTENT)
+        return Response({"name": name}, status=HTTP_204_NO_CONTENT)
 
 
 class RoomReviews(APIView):
@@ -313,8 +317,8 @@ class RoomBookingList(APIView):
             room=room,
             kind=Booking.BookingKindChoices.ROOM,
             check_in__gt=now,
-        )
-        serializer = PublicBookingSerializer(
+        ).order_by("check_in")
+        serializer = PublicRoomBookingSerializer(
             bookings,
             many=True,
         )
@@ -332,7 +336,7 @@ class RoomBookingList(APIView):
                 user=request.user,
                 kind=Booking.BookingKindChoices.ROOM,
             )
-            return Response(PublicBookingSerializer(booking).data)
+            return Response(PublicRoomBookingSerializer(booking).data)
         else:
             return Response(
                 serializer.errors,
@@ -362,7 +366,7 @@ class RoomBooking(APIView):
     def get(self, request, pk, booking_pk):
         room = self.get_object(pk)
         booking = self.get_booking(booking_pk, room)
-        serializer = PublicBookingSerializer(booking)
+        serializer = PublicRoomBookingSerializer(booking)
         return Response(serializer.data)
 
     def delete(self, request, pk, booking_pk):
@@ -388,7 +392,7 @@ class RoomBooking(APIView):
         )
         if serializer.is_valid():
             updated_booking = serializer.save()
-            return Response(PublicBookingSerializer(updated_booking).data)
+            return Response(PublicRoomBookingSerializer(updated_booking).data)
         else:
             return Response(
                 serializer.errors,

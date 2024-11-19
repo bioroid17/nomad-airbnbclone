@@ -24,28 +24,20 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   getAmenities,
   getCategories,
+  getRoom,
   IUploadRoomVariables,
-  uploadRoom,
+  updateRoom,
 } from "../api";
 import { IAmenity, ICategory, IRoomDetail } from "../types";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet";
 
-export default function UploadRoom() {
-  const { register, handleSubmit } = useForm<IUploadRoomVariables>();
-  const toast = useToast();
-  const navigate = useNavigate();
-  const mutation = useMutation({
-    mutationFn: uploadRoom,
-    onSuccess: (data: IRoomDetail) => {
-      toast({
-        status: "success",
-        title: "Room created",
-        position: "bottom-right",
-      });
-      navigate(`/rooms/${data.id}`);
-    },
+export default function UpdateRoom() {
+  const { roomPk } = useParams();
+  const { data } = useQuery<IRoomDetail>({
+    queryKey: [`rooms`, roomPk],
+    queryFn: getRoom,
   });
   const { data: amenities } = useQuery<IAmenity[]>({
     queryKey: ["amenities"],
@@ -55,8 +47,39 @@ export default function UploadRoom() {
     queryKey: ["categories"],
     queryFn: getCategories,
   });
+
+  const { register, handleSubmit, setValue } = useForm<IUploadRoomVariables>();
+  if (data) {
+    // console.log(data.pet_friendly);
+    setValue("name", data?.name);
+    setValue("country", data?.country);
+    setValue("city", data?.city);
+    setValue("address", data?.address);
+    setValue("price", data?.price);
+    setValue("rooms", data?.rooms);
+    setValue("toilets", data?.toilets);
+    setValue("description", data?.description);
+    setValue("pet_friendly", data?.pet_friendly);
+    setValue("kind", data?.kind);
+    setValue("category", data?.category.pk);
+  }
+  const toast = useToast();
+  const navigate = useNavigate();
+  const mutation = useMutation({
+    mutationFn: updateRoom,
+    onSuccess: (data: IRoomDetail) => {
+      toast({
+        status: "success",
+        title: "Room updated",
+        position: "bottom-right",
+      });
+      navigate(`/rooms/${roomPk}`);
+    },
+  });
   const onSubmit = (data: IUploadRoomVariables) => {
-    mutation.mutate(data);
+    if (roomPk) {
+      mutation.mutate({ variables: data, roomPk });
+    }
   };
   return (
     <ProtectedPage>
@@ -66,7 +89,7 @@ export default function UploadRoom() {
             <title>Upload Room</title>
           </Helmet>
           <Container>
-            <Heading textAlign={"center"}>Upload Room</Heading>
+            <Heading textAlign={"center"}>Update Room</Heading>
             <VStack
               spacing={10}
               as="form"
@@ -85,7 +108,9 @@ export default function UploadRoom() {
               <FormControl>
                 <FormLabel>Country</FormLabel>
                 <Input
-                  {...register("country", { required: true })}
+                  {...register("country", {
+                    required: true,
+                  })}
                   required
                   type="text"
                 />
@@ -101,7 +126,9 @@ export default function UploadRoom() {
               <FormControl>
                 <FormLabel>Address</FormLabel>
                 <Input
-                  {...register("address", { required: true })}
+                  {...register("address", {
+                    required: true,
+                  })}
                   required
                   type="text"
                 />
@@ -111,7 +138,9 @@ export default function UploadRoom() {
                 <InputGroup>
                   <InputLeftAddon children={<FaMoneyBill />} />
                   <Input
-                    {...register("price", { required: true })}
+                    {...register("price", {
+                      required: true,
+                    })}
                     required
                     type="number"
                     min={0}
@@ -123,7 +152,9 @@ export default function UploadRoom() {
                 <InputGroup>
                   <InputLeftAddon children={<FaBed />} />
                   <Input
-                    {...register("rooms", { required: true })}
+                    {...register("rooms", {
+                      required: true,
+                    })}
                     required
                     type="number"
                     min={0}
@@ -135,7 +166,9 @@ export default function UploadRoom() {
                 <InputGroup>
                   <InputLeftAddon children={<FaToilet />} />
                   <Input
-                    {...register("toilets", { required: true })}
+                    {...register("toilets", {
+                      required: true,
+                    })}
                     required
                     type="number"
                     min={0}
@@ -144,10 +177,21 @@ export default function UploadRoom() {
               </FormControl>
               <FormControl>
                 <FormLabel>Description</FormLabel>
-                <Textarea {...register("description", { required: true })} />
+                <Textarea
+                  {...register("description", {
+                    required: true,
+                  })}
+                />
               </FormControl>
               <FormControl>
-                <Checkbox {...register("pet_friendly")}>Pet friendly?</Checkbox>
+                <Checkbox
+                  defaultChecked={data?.pet_friendly}
+                  {...register("pet_friendly", {
+                    required: true,
+                  })}
+                >
+                  Pet friendly?
+                </Checkbox>
               </FormControl>
               <FormControl>
                 <FormLabel>Kind of room</FormLabel>
@@ -166,7 +210,9 @@ export default function UploadRoom() {
               <FormControl>
                 <FormLabel>Category</FormLabel>
                 <Select
-                  {...register("category", { required: true })}
+                  {...register("category", {
+                    required: true,
+                  })}
                   placeholder="Choose a category"
                 >
                   {categories?.map((category) => (
@@ -186,6 +232,10 @@ export default function UploadRoom() {
                     <Box key={amenity.pk}>
                       <Checkbox
                         value={amenity.pk}
+                        /* some: 메서드는 배열 안의 어떤 요소라도 주어진 판별 함수를 적어도 하나라도 통과하는지 테스트합니다. 만약 배열에서 주어진 함수가 true을 반환하면 true를 반환합니다. 그렇지 않으면 false를 반환합니다. 이 메서드는 배열을 변경하지 않습니다. */
+                        defaultChecked={data?.amenities.some(
+                          (a) => amenity.pk === a.pk
+                        )}
                         {...register("amenities", { required: true })}
                       >
                         {amenity.name}

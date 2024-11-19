@@ -116,6 +116,9 @@ export default function Header() {
                   </Link>
                 ) : null}
                 <MenuItem onClick={onLogOut}>Log out</MenuItem>
+                <Link to="/bookings">
+                  <MenuItem>My bookings</MenuItem>
+                </Link>
               </MenuList>
             </Menu>
           )

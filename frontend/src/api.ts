@@ -12,9 +12,11 @@ const instance = axios.create({
 export const getRooms = () =>
   instance.get("rooms/").then((response) => response.data);
 
-export const getRoom = ({ queryKey }: QueryFunctionContext) => {
+export const getRoom = async ({ queryKey }: QueryFunctionContext) => {
   const [_, roomPk] = queryKey;
-  return instance.get(`rooms/${roomPk}`).then((response) => response.data);
+  return await instance
+    .get(`rooms/${roomPk}`)
+    .then((response) => response.data);
 };
 
 export const getRoomReviews = ({ queryKey }: QueryFunctionContext) => {
@@ -106,11 +108,11 @@ export const usernameSignUp = ({
     )
     .then((response) => response.data);
 
-export const getAmenities = () =>
-  instance.get(`rooms/amenities/`).then((response) => response.data);
+export const getAmenities = async () =>
+  await instance.get(`rooms/amenities/`).then((response) => response.data);
 
-export const getCategories = () =>
-  instance.get(`categories/`).then((response) => response.data);
+export const getCategories = async () =>
+  await instance.get(`categories/`).then((response) => response.data);
 
 export interface IUploadRoomVariables {
   name: string;
@@ -130,6 +132,26 @@ export interface IUploadRoomVariables {
 export const uploadRoom = (variables: IUploadRoomVariables) =>
   instance
     .post(`rooms/`, variables, {
+      headers: { "X-CSRFToken": Cookie.get("csrftoken") || "" },
+    })
+    .then((response) => response.data);
+
+export const updateRoom = ({
+  variables,
+  roomPk,
+}: {
+  variables: IUploadRoomVariables;
+  roomPk: string;
+}) =>
+  instance
+    .put(`rooms/${roomPk}`, variables, {
+      headers: { "X-CSRFToken": Cookie.get("csrftoken") || "" },
+    })
+    .then((response) => response.data);
+
+export const deleteRoom = async (roomPk: string) =>
+  await instance
+    .delete(`rooms/${roomPk}`, {
       headers: { "X-CSRFToken": Cookie.get("csrftoken") || "" },
     })
     .then((response) => response.data);
@@ -197,4 +219,44 @@ export const checkBooking = ({
       )
       .then((response) => response.data);
   }
+};
+
+interface ICreateBookingVariables {
+  check_in: string;
+  check_out: string;
+  guests: number;
+  roomPk: string;
+}
+export const createBooking = ({
+  check_in,
+  check_out,
+  guests,
+  roomPk,
+}: ICreateBookingVariables) => {
+  return instance.post(
+    `rooms/${roomPk}/bookings`,
+    { check_in, check_out, guests },
+    {
+      headers: {
+        "X-CSRFToken": Cookie.get("csrftoken") || "",
+      },
+    }
+  );
+};
+
+export const getBookings = ({ queryKey }: QueryFunctionContext) => {
+  const [_, roomPk] = queryKey;
+  return instance
+    .get(`rooms/${roomPk}/bookings`)
+    .then((response) => response.data);
+};
+
+export const getUserRoomBookings = ({ queryKey }: QueryFunctionContext) => {
+  return instance.get(`bookings/rooms`).then((response) => response.data);
+};
+
+export const getUserExperienceBookings = ({
+  queryKey,
+}: QueryFunctionContext) => {
+  return instance.get(`bookings/experiences`).then((response) => response.data);
 };

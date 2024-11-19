@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { checkBooking, getRoom, getRoomReviews } from "../api";
 import { useQuery } from "@tanstack/react-query";
 import { IReview, IRoomDetail } from "../types";
@@ -12,20 +12,44 @@ import {
   Heading,
   HStack,
   Image,
+  Input,
+  InputGroup,
+  InputLeftElement,
   Skeleton,
   Text,
+  useDisclosure,
   VStack,
 } from "@chakra-ui/react";
-import { FaStar } from "react-icons/fa";
+import { FaStar, FaUserClock } from "react-icons/fa";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import type { Value } from "react-calendar/dist/cjs/shared/types";
 import { useState } from "react";
 import { Helmet } from "react-helmet";
 import "../calendar.css";
+import RoomDeleteModal from "../components/RoomDeleteModal";
+import BookingModal from "../components/BookingModal";
+import BookingListViewModal from "../components/BookingListViewModal";
+import useUser from "../lib/userUser";
 
 export default function RoomDetail() {
   const { roomPk } = useParams();
+  const { isLoggedIn } = useUser();
+  const {
+    isOpen: isRoomDeleteOpen,
+    onOpen: onRoomDeleteOpen,
+    onClose: onRoomDeleteClose,
+  } = useDisclosure();
+  const {
+    isOpen: isBookingOpen,
+    onOpen: onBookingOpen,
+    onClose: onBookingClose,
+  } = useDisclosure();
+  const {
+    isOpen: isBookingListOpen,
+    onOpen: onBookingListOpen,
+    onClose: onBookingListClose,
+  } = useDisclosure();
   const { isLoading, data } = useQuery<IRoomDetail>({
     queryKey: [`rooms`, roomPk],
     queryFn: getRoom,
@@ -43,13 +67,29 @@ export default function RoomDetail() {
     enabled: dates !== undefined,
     gcTime: 0,
   });
+  const [guests, setGuests] = useState<number>(1);
+  const onChange = (event: any) => {
+    setGuests(event.target.value);
+  };
   return (
     <Box mt={10} px={{ base: 10, lg: 40 }}>
       <Helmet>
         <title>{data ? data.name : "Loading..."}</title>
       </Helmet>
       <Skeleton height={"43px"} isLoaded={!isLoading}>
-        <Heading>{data?.name}</Heading>
+        <HStack justifyContent={"space-between"}>
+          <Heading>{data?.name}</Heading>
+          {data?.is_owner ? (
+            <HStack>
+              <Link to={`/rooms/${roomPk}/update`}>
+                <Button colorScheme="blue">Update Room</Button>
+              </Link>
+              <Button colorScheme="red" onClick={onRoomDeleteOpen}>
+                Delete Room
+              </Button>
+            </HStack>
+          ) : null}
+        </HStack>
       </Skeleton>
       <Grid
         mt={5}
@@ -84,7 +124,7 @@ export default function RoomDetail() {
           </GridItem>
         ))}
       </Grid>
-      <Grid gap={20} templateColumns={"2fr 1fr"} maxW="container.xl">
+      <Grid gap={20} templateColumns={"2fr 1fr"} maxW="100%">
         <Box>
           <HStack width={"60%"} mt={10} justifyContent={"space-between"}>
             <VStack w={"max"} alignItems={"flex-start"}>
@@ -102,6 +142,12 @@ export default function RoomDetail() {
                   <Text>
                     {data?.rooms} room{data?.rooms === 1 ? "" : "s"}
                   </Text>
+                  {data?.pet_friendly ? (
+                    <>
+                      <Text>•</Text>
+                      <Text>Pet friendly</Text>
+                    </>
+                  ) : null}
                 </HStack>
               </Skeleton>
             </VStack>
@@ -152,29 +198,66 @@ export default function RoomDetail() {
           </Box>
         </Box>
         <Box pt={10}>
+          <Button colorScheme="whatsapp" onClick={onBookingListOpen}>
+            View Booking List
+          </Button>
           <Calendar
             onChange={setDates}
             selectRange
             minDate={new Date()}
-            maxDate={new Date(Date.now() + 60 * 60 * 24 * 7 * 4 * 6 * 1000)}
+            maxDate={new Date(Date.now() + 60 * 60 * 24 * 30 * 6 * 1000)}
             minDetail="month"
             prev2Label={null}
             next2Label={null}
           />
+          <InputGroup>
+            <InputLeftElement
+              children={
+                <Box color={"gray.500"}>
+                  <FaUserClock />
+                </Box>
+              }
+            />
+            <Input
+              name="guests"
+              onChange={onChange}
+              type="number"
+              variant={"filled"}
+              placeholder="Number of Guests"
+            />
+          </InputGroup>
           <Button
             w={"100%"}
             my={5}
             colorScheme="red"
             isLoading={isCheckingBooking}
-            isDisabled={!checkBookingData?.ok}
+            isDisabled={!checkBookingData?.ok || !isLoggedIn}
+            onClick={onBookingOpen}
           >
-            Make booking
+            {isLoggedIn ? "Make booking" : "Please log in first"}
           </Button>
           {!isCheckingBooking && !checkBookingData?.ok ? (
             <Text color={"red.500"}>Can't book on those dates, sorry.</Text>
           ) : null}
         </Box>
       </Grid>
+      <RoomDeleteModal
+        roomPk={roomPk!}
+        isOpen={isRoomDeleteOpen}
+        onClose={onRoomDeleteClose}
+      />
+      <BookingModal
+        roomPk={roomPk!}
+        isOpen={isBookingOpen}
+        onClose={onBookingClose}
+        dates={dates}
+        guests={guests}
+      />
+      <BookingListViewModal
+        roomPk={roomPk!}
+        isOpen={isBookingListOpen}
+        onClose={onBookingListClose}
+      />
     </Box>
   );
 }

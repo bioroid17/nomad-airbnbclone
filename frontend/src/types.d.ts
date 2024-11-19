@@ -41,11 +41,11 @@ export interface IRoomDetail extends IRoomList {
   toilets: number;
   description: string;
   address: string;
-  pet_friendly: true;
+  pet_friendly: boolean;
   kind: string;
   is_owner: boolean;
   is_liked: boolean;
-  category: ICategory[];
+  category: ICategory;
   owner: IRoomOwner;
   amenities: IAmenity[];
 }
@@ -67,4 +67,30 @@ export interface IUser {
   gender: string;
   language: string;
   currency: string;
+}
+
+export interface ISmallRoomOrExperience {
+  pk: number;
+  name: string;
+}
+
+export interface IRoomBooking {
+  id: number;
+  check_in: string | null;
+  check_out: string | null;
+  guests: number;
+}
+
+export interface IExperienceBooking {
+  id: number;
+  experience_time: string | null;
+  experience_done: string | null;
+  guests: number;
+}
+
+export interface IUserRoomBooking extends IRoomBooking {
+  room: ISmallRoomOrExperience;
+}
+export interface IUserExperienceBooking extends IExperienceBooking {
+  experience: ISmallRoomOrExperience;
 }

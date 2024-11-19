@@ -29,7 +29,7 @@ from .serializers import (
 from reviews.serializers import ReviewSerializer
 from medias.serializers import PhotoSerializer, VideoSerializer
 from bookings.serializers import (
-    PublicBookingSerializer,
+    PublicExperienceBookingSerializer,
     CreateExperienceBookingSerializer,
 )
 
@@ -356,7 +356,7 @@ class ExperienceBookingList(APIView):
             kind=Booking.BookingKindChoices.EXPERIENCE,
             experience_time__gt=now,
         )
-        serializer = PublicBookingSerializer(
+        serializer = PublicExperienceBookingSerializer(
             bookings,
             many=True,
         )
@@ -374,7 +374,7 @@ class ExperienceBookingList(APIView):
                 user=request.user,
                 kind=Booking.BookingKindChoices.EXPERIENCE,
             )
-            return Response(PublicBookingSerializer(booking).data)
+            return Response(PublicExperienceBookingSerializer(booking).data)
         else:
             return Response(
                 serializer.errors,
@@ -407,7 +407,7 @@ class ExperienceBooking(APIView):
     def get(self, request, pk, booking_pk):
         experience = self.get_object(pk)
         booking = self.get_booking(booking_pk, experience)
-        serializer = PublicBookingSerializer(booking)
+        serializer = PublicExperienceBookingSerializer(booking)
         return Response(serializer.data)
 
     def delete(self, request, pk, booking_pk):
@@ -430,7 +430,7 @@ class ExperienceBooking(APIView):
         )
         if serializer.is_valid():
             updated_booking = serializer.save()
-            return Response(PublicBookingSerializer(updated_booking).data)
+            return Response(PublicExperienceBookingSerializer(updated_booking).data)
         else:
             return Response(
                 serializer.errors,

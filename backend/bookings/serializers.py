@@ -1,7 +1,10 @@
 from django.utils import timezone
 from rest_framework import serializers
+
+from experiences.serializers import SmallExperienceSerializer
+from rooms.serializers import SmallRoomSerializer
+
 from .models import Booking
-from experiences.models import Experience
 
 
 class CreateRoomBookingSerializer(serializers.ModelSerializer):
@@ -77,9 +80,14 @@ class CreateExperienceBookingSerializer(serializers.ModelSerializer):
         return value
 
 
-class PublicBookingSerializer(serializers.ModelSerializer):
+class BookingSerializer(serializers.ModelSerializer):
 
-    experience_done = serializers.SerializerMethodField()
+    class Meta:
+        model = Booking
+        fields = "__all__"
+
+
+class PublicRoomBookingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Booking
@@ -87,9 +95,58 @@ class PublicBookingSerializer(serializers.ModelSerializer):
             "pk",
             "check_in",
             "check_out",
+            "guests",
+        )
+
+
+class PublicExperienceBookingSerializer(serializers.ModelSerializer):
+
+    experience_done = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Booking
+        fields = (
+            "pk",
             "experience_time",
             "experience_done",
             "guests",
+        )
+
+    def get_experience_done(self, booking):
+        if booking.experience_time:
+            return booking.experience.end
+        else:
+            return None
+
+
+class PrivateRoomBookingSerializer(serializers.ModelSerializer):
+
+    room = SmallRoomSerializer()
+
+    class Meta:
+        model = Booking
+        fields = (
+            "pk",
+            "check_in",
+            "check_out",
+            "guests",
+            "room",
+        )
+
+
+class PrivateExperienceBookingSerializer(serializers.ModelSerializer):
+
+    experience = SmallExperienceSerializer()
+    experience_done = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Booking
+        fields = (
+            "pk",
+            "experience_time",
+            "experience_done",
+            "guests",
+            "experience",
         )
 
     def get_experience_done(self, booking):

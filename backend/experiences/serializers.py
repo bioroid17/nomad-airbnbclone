@@ -81,3 +81,13 @@ class ExperienceListSerializer(serializers.ModelSerializer):
     def get_is_host(self, experience):
         request = self.context["request"]
         return experience.host == request.user
+
+
+class SmallExperienceSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Experience
+        fields = (
+            "pk",
+            "name",
+        )
