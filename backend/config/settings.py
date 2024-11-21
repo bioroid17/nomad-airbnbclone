@@ -186,12 +186,15 @@ REST_FRAMEWORK = {
     ]
 }
 
-CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
+if DEBUG:
+    CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
+    CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
+else:
+    CORS_ALLOWED_ORIGINS = ["https://airbnbclone-frontend.onrender.com"]
+    CSRF_TRUSTED_ORIGINS = ["https://airbnbclone-frontend.onrender.com"]
+
 
 CORS_ALLOW_CREDENTIALS = True
-
-CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
-
 
 GH_SECRET = env("GH_SECRET")
 
@@ -199,6 +202,8 @@ CF_ID = env("CF_ID")
 CF_TOKEN = env("CF_TOKEN")
 
 if not DEBUG:
+    SESSION_COOKIE_DOMAIN = ".airbnbclone.xyz"
+    CSRF_COOKIE_DOMAIN = ".airbnbclone.xyz"
     sentry_sdk.init(
         dsn="https://b8cc5763a4c283d22bb16a050883655f@o4508335161933824.ingest.us.sentry.io/4508335298445312",
         # Set traces_sample_rate to 1.0 to capture 100%
