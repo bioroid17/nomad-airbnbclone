@@ -207,7 +207,7 @@ class KakaoLogIn(APIView):
                 data={
                     "grant_type": "authorization_code",
                     "client_id": "6bafc818e8818e92fdba13bc95a34f0a",
-                    "redirect_uri": "http://localhost:3000/social/kakao",
+                    "redirect_uri": "https://airbnbclone.xyz/social/kakao",
                     "code": code,
                 },
             )
